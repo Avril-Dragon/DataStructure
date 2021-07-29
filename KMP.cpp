@@ -54,6 +54,28 @@ int KMP(Str s,Str t,int next[])
 		return -1;
 }
 
+void GetNext(Str t,int next[])
+{
+	int j=0,k=-1;
+	next[0]=-1;
+	while(j<t.length)
+	{
+		if(k==-1||t.data[j]==t.data[k])
+		{
+			j++;
+			k++;
+			next[j]=k;
+		}
+		else
+			k=next[k];	//k back 
+	}
+	printf("The next[] for %s is:\n",t);
+	for(int i=0;i<5;i++)
+		printf("%d",next[i]);
+	printf("\n");
+	
+}
+
 int main()
 {
 	Str s,t;
@@ -63,13 +85,7 @@ int main()
 	strcpy(t.data,"aaaab");
 	t.length=5;
 	
-	printf("%d",BF(s,t)); 
-	
-	//手动赋值？一会计算 
-	next[0]=-1;
-	next[1]=0;
-	next[2]=1;
-	next[3]=2;
-	next[4]=3;
-	printf("%d",KMP(s,t,next)); 
+	//printf("%d",BF(s,t)); 
+	GetNext(t,next); 
+	printf("index:%d",KMP(s,t,next)); 
 }
