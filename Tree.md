@@ -69,7 +69,19 @@
 >
 > ### 解得$h_{min}=log _m(n(m-1)+1)$​​​​​​
 
+# 树的存储结构
 
+## 1.双亲表示法(顺序存储)
+
+![image-20210812185724567](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812185724567.png)
+
+## 2.孩子表示法(顺序+链式存储)
+
+![image-20210812190155027](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812190155027.png)
+
+## 3.孩子兄弟表示法(链式存储)
+
+![image-20210812190646356](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812190646356.png)
 
 # 二叉树
 
@@ -233,15 +245,376 @@
 
 
 
+## 由遍历序列构造二叉树
+
+
+
+### 若只给出一棵二叉树的前/中/后/层 序列遍历的一种，不能唯一确定一棵二叉树
+
+### 只能由某一序+**中序**才能确定
+
+![image-20210811223803986](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210811223803986.png)
+
+
+
+### 前序+中序：
+
+![image-20210812080603469](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812080603469.png)
+
+
+
+### 后序+中序：
+
+![image-20210812080731009](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812080731009.png)
+
+
+
+### 层序+中序：
+
+![image-20210812080925344](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812080925344.png)
+
+
+
+ 
+
+## 线索二叉树
+
+### n个结点的二叉树，有n+1个空链域，可以将它们用来记录前驱后继的信息
+
+#### 前驱线索：由左孩子指针充当
+
+#### 后继线索：由右孩子指针充当
+
+存储结构：
+
+<img src="C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812093058713.png" alt="image-20210812093058713"  />
+
+
+
+**与传统的二叉树结点不同，新增ltag与rtag标志位，当标志位==1时代表孩子结点是线索，=0则是孩子**
+
+![image-20210812093936632](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812093936632.png)
 
 
 
 
 
+### 构造线索二叉树的小记：
+
+中序线索化时候，我们不需要对左孩子右孩子做任何判断，纯纯的用中序遍历即可
+
+![image-20210812151808257](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812151808257.png)
+
+但是在先序线索化时候，就需要对ltag，rtag做判断（注意，是全部做判断，并非之一）
+
+![image-20210812151942786](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812151942786.png)
+
+道理是一样的，都会死循环
+
+但为什么中序不用呢？
+
+以**A(B(D),C)**为例，中序遍历序列为：DBAC
+
+B是没有右孩子的，在pre指向B时候，结点指向了A，恰好把pre->rchild设为了A
+
+![image-20210812152529266](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812152529266.png)
+
+然后下一个该访问B的右孩子了，直接指向了Ａ
+
+但是像先序，以**A(B(D),C)**为例，先序遍历序列为：ABDC
+
+如果不加保护(没有加右孩子判断)
+
+![image-20210812153129502](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812153129502.png) 
+
+>  pre为null,结点为A A左右孩子都有,进入A->lchild,pre设为A
+>
+>  pre为A,结点为B,B没有右孩子,进入B->lchild,pre设为B
+>
+> pre为B,结点为D,D左右孩子都没有,设D的前驱为B,同时pre不为null且pre->rchild=null,设B的后继为Ｄ，pre设为D
+>
+> pre为D,结点没有,**回溯到B,因为没有右孩子保护进入B->rchild**,即D,查看D的ltag为1(左孩子保护)不进入,同时pre不为null且pre->rchild为null,设D的后继为D,pre设为D
+>
+> pre为D,结点为D...
+
+可以看到,如果有了右孩子保护,回溯到B后就不会进入D,而是继续回溯到A，完成先序线索化
+
+![image-20210812154157751](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812154157751.png)
+
+后续完全不用考虑这个问题,因为先访问再线索化,线索化完成之后直接回溯了
+
+
+
+### 线索二叉树找前驱后继
+
+#### 中序线索二叉树找中序后继
+
+1. **若$p->rtag=1$​,则$next = p->rchild$**
+2. **若$p->rtag=0$,则$next=右子树的最左下结点$**
+
+<img src="C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812170031073.png" alt="image-20210812170031073" style="zoom:50%;" />
+
+#### 中序线索二叉树找中序前驱
+
+1. **若$p->ltag$​ = 1,则$pre=p->lchild$​**
+
+2. **若$p->ltag = 0$​,则$pre=左子树的最右下结点$​**
+
+   <img src="C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812171129875.png" alt="image-20210812171129875" style="zoom:50%;" />
+
+#### 先序线索二叉树找先序后继
+
+1. **若$p->rtag = 1$​,则$next = p->rchild$**
+
+2. **若$p->rtag = 0$**
+
+   **访问序列为==根 左 右==**
+
+   **若有左孩子,则$next = 左孩子的根结点$**
+
+   **若没有左孩子,则必有右孩子,则$next = 右孩子的根结点$​**
+
+   
+
+<img src="C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812172624061.png" alt="image-20210812172624061" style="zoom:50%;" />
+
+
+
+#### 先序线索二叉树找先序前驱
+
+1. **若$p->ltag$ = 1,则$next=p->lchild$**
+
+2. **若$p->ltag = 0$​​,因为遍历顺序为==根左右==,所以左右子树的结点只可能为根的后继结点 不可能为根的前驱**
+
+   **除非从头开始先序遍历或者改成三叉链表(多加一个父结点)**
+
+   <img src="C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812174614030.png" alt="image-20210812174614030" style="zoom:50%;" />
+
+
+
+  3. **如果能找到p的父结点**
+
+     1. **且p是左孩子,则p的父结点即为其前驱**
+
+     2. **且p是右孩子,并且其左兄弟为空,则p的父结点即为其前驱**
+
+     3. **且p是右孩子,并且其左兄弟不为空,则p的前驱为左兄弟子树中最后一个被先序遍历的结点**
+
+     4. **如果p是根结点,则p没有先序前驱**
+
+        ![image-20210812180638981](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812180638981.png)
+
+#### 后序线索二叉树找后序前驱
+
+1. **若$p->ltag = 1$​,则$pre = p->lchild$​**
+
+2. **若$p->ltag = 0$​,则p一定存在左孩子,遍历顺序为==左右根==**
+
+   1. **若存在右孩子, 则前驱结点为右孩子**
+
+      **![image-20210812182926003](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812182926003.png)**
+
+   2. **左不存在右孩子,则前驱结点为左孩子**
+
+      ![image-20210812183000000](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812183000000.png)
+
+#### 后序线索二叉树找后序后继
+
+1. **若$p->rtag = 1$​​,则$next= p->rchild$**
+
+2. **若$p->rtag = 0$​,后序遍历顺序为==左 右 根==左右子树的结点只可能是根的前驱,不可能是他的后继**
+
+   **除非从头开始先序遍历或者改成三叉链表(多加一个父结点)**
+
+   ![image-20210812184128780](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812184128780.png)
+
+3. **如果能找到p的父结点**
+
+   1. **且p是右孩子,则p的父结点即为其后继**
+
+   2. **且p是左孩子,并且其右兄弟为空,则p的父结点即为其后继**
+
+   3. **且p是左孩子,并且其右兄弟不为空,则p的前驱为右兄弟子树中第一个被后序遍历的结点**
+
+   4. **如果p是根结点,则p没有后序后继**
+
+      ![image-20210812184631287](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812184631287.png)
+
+      
+
+#### 总结
+
+![image-20210812185114566](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210812185114566.png)
+
+
+
+## 树的遍历
+
+### 先根遍历:
+
+**若树非空,先访问根节点,再依次对每棵子树进行先根遍历**
+
+**将其转化为二叉树后，先根遍历即==先序遍历==**
+
+![image-20210814114332521](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210814114332521.png)
+
+### 后根遍历：
+
+**若树非空，先依次对每棵子树进行后根遍历，最后再访问根节点**
+
+**将其转化为二叉树后，后根遍历即==中序遍历==**
+
+![image-20210815142839827](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210815142839827.png)
+
+### 层次遍历：
+
+1. 若树非空，则根节点入队
+2. 若队列非空，则队头元素出队，同时将该元素的孩子依次入队
+3. 重复2直到队列为空
+
+![image-20210815143252159](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210815143252159.png)
+
+## 二叉排序树（BST）
+
+### 又称二叉查找树，一棵二叉树或者是空二叉树，或者是具有如下性质的二叉树
+
+> **左子树结点值<根结点值<右子树结点值=>进行中序遍历，可以得到一个递增的有序序列**
+>
+> **左子树和右子树又各是一棵二叉排序树**
+
+![image-20210815144859445](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210815144859445.png)
+
+
+
+### 删除操作：
+
+先搜索到目标结点
+
+1. 若被删除结点z是叶子结点，则直接删除，不会有任何影响，不会破坏二叉排序树的性质
+
+2. 若被删除结点z只有一棵左子树或右子树，则让z的子树成为z父结点的子树，代替z的位置
+
+3. 若被删除结点z左右子树都存在，则令z的直接后继或者（直接前驱）代替z，然后从二叉排序树中删除这个结点，就转换成了情况1或情况2
+
+   > **因为对二叉排序树的中序遍历得到一个递增序列，**
+   >
+   > **所以**
+   >
+   > **z的直接后继为右子树第一个被访问的结点，即右子树的最小结点，即右子树最左下结点(该结点一定没有左子树)**
+   >
+   > **z的直接前驱为左子树最后一个被访问的结点，即左子树的最大结点，即左子树最右下结点(该结点一定没有右子树)**
+
+   <center class="half">    <img src="C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210815154438260.png" alt="image-20210815154438260" width="300" />    <img src="C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210815154507516.png" alt="image-20210815154507516" width="300" /> </center>
+
+### 查找效率分析：
+
+#### 查找长度：在查找运算中，需要对比关键字的次数称为查找长度，反映了查找操作时间复杂度
+
+#### 平均查找长度(ASL)
+
+**最好$log_2n$,最坏$logn$​**
+
+## 平衡二叉树(AVL)
+
+### 简称平衡树，树上任一结点的左子树和右子树的高度之差不超过1
+
+**==结点的平衡因子==：左子树高-右子树高**
+
+
+
+### 调整最小不平衡子树A：
+
+#### LL:在A的左孩子的左子树插入导致不平衡
+
+**调整方法:将A的左孩子B向==右上==旋转,代替A成为根节点,B的右子树作为A结点的左子树**
+
+![image-20210816141321335](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210816141321335.png)
+
+#### RR:在A的右孩子的右子树插入导致不平衡
+
+**调整方法:将A的右孩子B向==左上旋转==,代替A成为根节点,B的左子树作为A结点的右子树**
+
+![image-20210816141442004](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210816141442004.png)
+
+#### LR:在A的左孩子的右子树插入导致不平衡
+
+**调整方法:先将A的左孩子B的右孩子C向==左上旋转==,代替B成为根节点,再把C向==右上旋转==,代替A成为根节点**
+
+![image-20210816142117035](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210816142117035.png)
+
+#### R L:在A的右孩子的左子树插入导致不平衡
+
+**调整方法:先将A的右孩子B的左孩子C向==右上旋转==,代替B成为根节点,再把C向==左上旋转==,代替A成为根节点**
+
+![image-20210816142303037](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210816142303037.png)
 
 
 
 
+
+### 查找效率分析:
+
+**假设以$n_h$表示深度为h的平衡二叉树中含有最少的结点数**
+
+**则有$n_0=0,n_1=1,n_2=2$,并且有$n_h=n_{h-1}+n_{h-2}+1$**
+
+**可以证明含有n个结点的平衡二叉树的最大深度为$O(log_2n)$,平衡二叉树的平均查找长度为$O(log_2n)$**
+
+
+
+# 哈夫曼树:
+
+## 定义:
+
+**结点的权:有某种现实含义的数值(如:表示结点的重要性)**
+
+**结点的带权路径长度:从树的根到该节点的路径长度(经过的边数)与该结点上权值的乘积**
+
+**树的带权路径长度:树中所有叶结点的带权路径长度之和**
+
+**在含有n个带权叶结点的二叉树中,其中==带权路径长度(WPL)最小的二叉树==称为哈夫曼树,也称最优二叉树**
+
+![image-20210816151310807](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210816151310807.png)
+
+
+
+## 哈夫曼树的构造:
+
+给定n个权值分别为$w_1,w_2,w_3....,w_n$​的结点,构造算法如下:
+
+1. 从中选取两个权值最小的结点(树),使其成为兄弟,生成一棵新树,其权值为两结点(左右子树的根节点)权值之和
+2. 删除选中的两个树,加入新生成的树
+3. 重复,直到只剩下一棵树
+
+![image-20210816152324479](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210816152324479.png)
+
+
+
+## 特点:
+
+1. **每个初始结点最终都成为叶子结点 ,且权值越小的结点到根节点的路径长度越大**
+
+2. **哈夫曼树的结点总数为$2n-1$​**
+
+   > **一共n个结点,要进行n-1次合并,每次合并会出现一个新结点**
+
+3. **哈夫曼树中不存在度为1的结点**
+
+4. **哈夫曼树并不唯一,但WPL必然相同且为最优**
+
+   ![image-20210816153527397](C:\Users\22684\AppData\Roaming\Typora\typora-user-images\image-20210816153527397.png)
+
+
+
+## 哈夫曼编码:
+
+**固定长度编码:每个字符用相等长度的二进制位表示**
+
+**可变长度编码:允许对不同字符用不等长的二进制位表示**
+
+**若没有一个编码是另一个编码的前缀.则称这样的编码为==前缀编码==**
+
+**哈夫曼编码:字符集的每一个字符作为一个叶子结点,各个字符出现的频度作为结点的权值,构造哈夫曼树**
 
 
 
